@@ -1,3 +1,30 @@
+# Deploying a LangChain application to Cloud Run
+
+## Overview
+This repository contains a sample application that can be deployed to Cloud Run. 
+
+The application is built using FastAPI and uses the [LangChain Python SDK](https://python.langchain.com/docs/get_started/introduction.html), and exposes two routes:
+1. `/chat`: This route is used to send a message to the chatbot and get a response.
+2. `/new_session`: This route is used to set a new active session with the chatbot.
+
+
+
+The sample also demonstrates how to persist the user's session in Firestore, and restore it back to give the LLM a long-lasting memory.
+
+## Pre-requisites
+
+- Python >= 3.9
+- [gcloud CLI](https://cloud.google.com/sdk/docs/install)
+
+You will also need to create a Google Cloud project with billing enabled, and enable the following APIs:
+
+```bash
+gcloud services enable run.googleapis.com
+gcloud services enable cloudbuild.googleapis.com
+gcloud services enable containerregistry.googleapis.com
+gcloud services enable aiplatform.googleapis.com
+```
+
 ## Local debugging
 
 ## Setup the environment
@@ -28,6 +55,12 @@ The application will be available at http://0.0.0.0:8080.
 
 ## Deployment
 
-### Building the container
+The application can be deployed to Cloud Run using the following command:
 
-### Deploying to Cloud Run
+```bash
+gcloud run deploy SERVICE_NAME --source . --project PROJECT_ID --allow-unauthenticated
+```
+
+Where `SERVICE_NAME` is the name of the service you want to deploy, can be any of your choice.
+
+Read more about [deploying to Cloud Run](https://cloud.google.com/run/docs/deploying).
