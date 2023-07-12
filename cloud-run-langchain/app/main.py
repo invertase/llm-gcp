@@ -12,8 +12,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-# Use a global variable to keep the conversation chain in memory between requests.
-start_chat: StartChat = None
+start_chat = None
 
 
 @app.post("/chat", status_code=status.HTTP_200_OK)
@@ -23,16 +22,12 @@ def chat(
 ):
     global start_chat
 
+    if not start_chat:
+        start_chat = StartChat(uid=user["uid"])
+
     try:
-        if start_chat is None:
-            start_chat = StartChat()
-
-        if user.get("uid") != start_chat.uid:
-            start_chat = StartChat()
-
-        reply = start_chat.add_message(message=message.message, uid=user["uid"])
+        reply = start_chat.add_message(message=message.message)
         return {"message": reply}
-
     except Exception as e:
         logger.error(e)
         raise HTTPException(
@@ -41,15 +36,15 @@ def chat(
         )
 
 
-@app.post("/new_session", status_code=status.HTTP_200_OK)
+@app.delete("/clear_session")
 def invalidate_chat(
     user=Depends(verify_user),
 ):
     try:
-        start_chat = StartChat()
-        session_id = start_chat.new_session(uid=user["uid"])
-        return {"message": f"New session created: {session_id}"}
+        start_chat = StartChat(uid=user["uid"])
+        start_chat.clear_session(uid=user["uid"])
 
+        return {"message": "Session cleared"}
     except Exception as e:
         logger.error(e)
         raise HTTPException(
