@@ -1,5 +1,8 @@
 import random
 import string
+
+import firebase_admin
+
 from langchain import ConversationChain
 from langchain.llms import VertexAI
 from langchain.llms.base import LLM
@@ -10,6 +13,10 @@ from langchain.memory.chat_message_histories import FirestoreChatMessageHistory
 from firebase_admin import firestore
 from google.cloud.firestore import DocumentSnapshot, Client
 
+firebase_admin.initialize_app()
+
+client = firestore.client()
+
 
 class StartChat:
     llm: LLM
@@ -17,11 +24,14 @@ class StartChat:
     history: BaseChatMessageHistory = None
     conversation: ConversationChain = None
 
+    uid: str = None
+
     def __init__(self):
         self.llm = VertexAI()
-        self.client = firestore.client()
 
     def __start(self, uid: str = None):
+        self.uid = uid
+
         active_session = self.__get_active_session(uid=uid)
         self.history = FirestoreChatMessageHistory(
             user_id=uid,
@@ -38,9 +48,7 @@ class StartChat:
         self.conversation = conversation
 
     def __get_active_session(self, uid: str = None) -> str or None:
-        user_history: DocumentSnapshot = self.client.document(
-            f"chat_history/{uid}"
-        ).get()
+        user_history: DocumentSnapshot = client.document(f"chat_history/{uid}").get()
         active_session: str
 
         try:
@@ -52,7 +60,7 @@ class StartChat:
         return active_session
 
     def __set_active_session(self, uid: str = None, session_id=None) -> str or None:
-        user_history = self.client.document(f"chat_history/{uid}")
+        user_history = client.document(f"chat_history/{uid}")
         if user_history is not None:
             user_history.set({"active_session": session_id})
             return session_id
@@ -67,7 +75,7 @@ class StartChat:
         return active_session
 
     def add_message(self, message: str, uid: str = None):
-        if self.conversation is None:
+        if self.conversation is None or self.uid != uid:
             self.__start(uid)
 
         output = self.conversation.run(input=message)

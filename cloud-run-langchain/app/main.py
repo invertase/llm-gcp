@@ -1,6 +1,5 @@
 import logging
 
-import firebase_admin
 
 from fastapi import Depends, FastAPI, HTTPException, status
 
@@ -10,9 +9,11 @@ from app.models.chat_message import ChatMessage
 
 logger = logging.getLogger("uvicorn")
 
-firebase_admin.initialize_app()
 
 app = FastAPI()
+
+# Use a global variable to keep the conversation chain in memory between requests.
+start_chat = StartChat()
 
 
 @app.post("/chat", status_code=status.HTTP_200_OK)
@@ -21,7 +22,6 @@ def chat(
     user=Depends(verify_user),
 ):
     try:
-        start_chat = StartChat()
         reply = start_chat.add_message(message=message.message, uid=user["uid"])
         return {"message": reply}
 
