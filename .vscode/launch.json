@@ -2,7 +2,8 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Python: Module",
+			"cwd": "${workspaceFolder}/cloud-run-langchain",
+			"name": "Cloud Run: LangChain",
 			"type": "python",
 			"request": "launch",
 			"module": "uvicorn",
