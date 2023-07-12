@@ -49,7 +49,7 @@ uvicorn app.main:app --reload
 
 ### VS Code
 
-To debug the application in VS Code, you can use the provided [launch](.vscode/launch.json) configuration. This will start the application in debug mode and allow you to set breakpoints.
+To debug the application in VS Code, you can use the provided [launch](../.vscode/launch.json) configuration. This will start the application in debug mode and allow you to set breakpoints.
 
 The application will be available at http://0.0.0.0:8080.
 
