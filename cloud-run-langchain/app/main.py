@@ -3,17 +3,17 @@ import logging
 
 from fastapi import Depends, FastAPI, HTTPException, status
 
+from app.chat import StartChat
 from app.auth import verify_user
-from app.langchain import StartChat
 from app.models.chat_message import ChatMessage
 
-logger = logging.getLogger("uvicorn")
+logger = logging.getLogger(__name__)
 
 
 app = FastAPI()
 
 # Use a global variable to keep the conversation chain in memory between requests.
-start_chat = StartChat()
+start_chat: StartChat = None
 
 
 @app.post("/chat", status_code=status.HTTP_200_OK)
@@ -21,7 +21,15 @@ def chat(
     message: ChatMessage,
     user=Depends(verify_user),
 ):
+    global start_chat
+
     try:
+        if start_chat is None:
+            start_chat = StartChat()
+
+        if user.get("uid") != start_chat.uid:
+            start_chat = StartChat()
+
         reply = start_chat.add_message(message=message.message, uid=user["uid"])
         return {"message": reply}
 

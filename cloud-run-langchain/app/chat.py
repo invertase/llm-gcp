@@ -25,18 +25,17 @@ class StartChat:
     conversation: ConversationChain = None
 
     uid: str = None
+    session_id: str = None
 
     def __init__(self):
         self.llm = VertexAI()
 
     def __start(self, uid: str = None):
-        self.uid = uid
-
-        active_session = self.__get_active_session(uid=uid)
+        self.__get_active_session(uid=uid)
         self.history = FirestoreChatMessageHistory(
             user_id=uid,
             collection_name=f"chat_history/{uid}/history",
-            session_id=active_session,
+            session_id=self.session_id,
         )
 
         memory = ConversationBufferMemory(
@@ -49,30 +48,21 @@ class StartChat:
 
     def __get_active_session(self, uid: str = None) -> str or None:
         user_history: DocumentSnapshot = client.document(f"chat_history/{uid}").get()
-        active_session: str
-
         try:
-            active_session = user_history.get("active_session")
-            return active_session
+            self.__set_active_session(
+                uid=uid, session_id=user_history.get("active_session")
+            )
         except KeyError:
-            self.__create_active_session(uid=uid)
+            self.__set_active_session(uid=uid)
 
-        return active_session
-
-    def __set_active_session(self, uid: str = None, session_id=None) -> str or None:
+    def __set_active_session(self, uid: str = None, session_id=None):
         user_history = client.document(f"chat_history/{uid}")
-        if user_history is not None:
-            user_history.set({"active_session": session_id})
-            return session_id
-        else:
-            return None
+        user_history.set({"active_session": session_id})
+        self.session_id = session_id
 
-    def __create_active_session(self, uid: str = None) -> str or None:
+    def __generate_session_id(self) -> str:
         _random = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
-        active_session = f"session-{_random}"
-        self.__set_active_session(uid=uid, session_id=active_session)
-
-        return active_session
+        return f"session-{_random}"
 
     def add_message(self, message: str, uid: str = None):
         if self.conversation is None or self.uid != uid:
@@ -83,4 +73,5 @@ class StartChat:
         return output
 
     def new_session(self, uid: str = None):
-        return self.__create_active_session(uid=uid)
+        self.__set_active_session(uid=uid, session_id=self.__generate_session_id())
+        self.__start(uid)
