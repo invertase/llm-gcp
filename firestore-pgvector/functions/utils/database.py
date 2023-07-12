@@ -21,18 +21,18 @@ async def upload_embeddings(datapoints: List[Datapoint]):
         )
 
         # conn.execute("CREATE TABLE IF NOT EXISTS embeddings (id VARCHAR(1024) PRIMARY KEY, content VARCHAR(1024), embedding vector(768));")
-        print("registering vector")
 
+
+        #  TODO: can we move this whole connection logic out so that it's not called every time?
         await register_vector(conn)
-
-        print("registered vector")
-
 
         # print(len(embeddings))
 
         for datapoint in datapoints:
+            # TODO: handle clashing ids
             await conn.execute("INSERT INTO embeddings (id, content, embedding) VALUES ($1, $2, $3);", datapoint.id, datapoint.content, datapoint.embedding)
-            print(f"inserted {datapoint.id}")
+            # print(f"inserted {datapoint.id}")
+        print("inserted datapoints", [d.id for d in datapoints])
 
 
 async def vector_search(plaintext_query: str):
@@ -49,11 +49,9 @@ async def vector_search(plaintext_query: str):
         )
 
         # conn.execute("CREATE TABLE IF NOT EXISTS embeddings (id VARCHAR(1024) PRIMARY KEY, values REAL[]);")
-        print("registering vector")
 
         await register_vector(conn)
 
-        print("registered vector")
         # model = TextEmbeddingModel.from_pretrained("textembedding-gecko@001")
 
         embedded_query = model.get_embeddings([plaintext_query])
