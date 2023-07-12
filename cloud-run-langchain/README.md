@@ -27,7 +27,7 @@ gcloud services enable aiplatform.googleapis.com
 
 ## Local debugging
 
-## Setup the environment
+### Setup the environment
 
 To debug locally, first you need to install the dependencies and activate the virtual environment.
 
