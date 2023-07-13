@@ -50,7 +50,7 @@ class BackfillTaskRequest:
     collection_name: str
     document_ids: List[str]
 
-async def backfill_embeddings_task(data):
+async def backfill_embeddings_task_handler(data):
     """
     This function is called by the Cloud Task.
     Assume document_ids come in as a list of strings of length 100.
@@ -62,11 +62,6 @@ async def backfill_embeddings_task(data):
     id = backfill_task.id
     collection_name = backfill_task.collection_name
     document_ids = backfill_task.document_ids
-
-    # TODO
-    # task_ref = "task_reference"
-
-    print("DOC IDS",document_ids)
 
     futures = [backfill_embeddings_chunk(document_ids[i:i+5]) for i in range(0, len(document_ids), 5)]
 
