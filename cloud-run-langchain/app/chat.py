@@ -19,7 +19,7 @@ firebase_admin.initialize_app()
 client = firestore.client()
 
 
-class StartChat:
+class ChatSession:
     llm: LLM
     client: Client
     history: BaseChatMessageHistory = None
