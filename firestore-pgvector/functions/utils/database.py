@@ -7,6 +7,26 @@ from utils.llm import model
 from utils.datapoint import Datapoint
 from typing import List
 
+
+async def create_table():
+
+    loop = asyncio.get_running_loop()
+
+    async with Connector(loop=loop) as connector:
+        # Create connection to Cloud SQL PostgreSQL database
+        conn: asyncpg.Connection = await connector.connect_async(
+            f"invertase--palm-demo:us-central1:firestore-pgvector-demo",
+            "asyncpg",
+            user="postgres",
+            password="invertase",
+            db = f"postgres"
+        )
+
+        await conn.execute("CREATE TABLE IF NOT EXISTS embeddings (id VARCHAR(1024) PRIMARY KEY, content VARCHAR(1024), embedding vector(768));")
+        await conn.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+
+        print('created table if not exists!')
+
 async def upload_embeddings(datapoints: List[Datapoint]):
     loop = asyncio.get_running_loop()
 
@@ -58,8 +78,8 @@ async def vector_search(plaintext_query: str, limit: int = 1):
 
         arr = np.array(embedded_query[0].values)
 
-        result = await conn.fetch('SELECT id FROM embeddings ORDER BY embedding <-> $1 LIMIT $2', arr, str(limit))
+        result = await conn.fetch('SELECT id,content FROM embeddings ORDER BY embedding <-> $1 LIMIT $2', arr, limit)
 
         print('result',result)
 
-        return result
+        return [dict(row) for row in result]

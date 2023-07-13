@@ -1,10 +1,12 @@
 from typing import List
 from dataclasses import dataclass
-from utils.firestore import get_datapoints
-from utils.database import upload_embeddings, vector_search
+from utils.firestore import get_datapoints, get_collection_ids, backfill_embeddings_task
+from utils.database import upload_embeddings, vector_search, create_table
 from utils.llm import assign_embeddings
 from firebase_functions import https_fn
 import asyncio
+import functools
+import json
 
 COLLECTION_NAME = "pgvector"
 DIMENSION = 768
@@ -14,73 +16,66 @@ DIMENSION = 768
 class VectorSearchRequest:
     query: str
     limit: int = 1
-    
+
+
+def force_sync(fn):
+    '''
+    turn an async function to sync function
+    '''
+    import asyncio
+
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        res = fn(*args, **kwargs)
+        if asyncio.iscoroutine(res):
+            return asyncio.get_event_loop().run_until_complete(res)
+        return res
+
+    return wrapper
 
 @https_fn.on_request()
-async def http_vector_search(request):
+def http_vector_search(request):
     """
     This function is called by the HTTP trigger.
     """
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+
     vector_search_request = VectorSearchRequest(**request.json)
 
     query = vector_search_request.query
     limit = vector_search_request.limit
 
-    results = await vector_search(query, limit)
+    results =  force_sync(vector_search)(query, limit)
 
-    return {"results": results}
+    print("RESULTS", [json.dumps(r) for r in results])
 
+    return https_fn.Response(
+        response=json.dumps(results), status=200, headers={"Content-Type": "application/json"}
+    )
 
-
-
-
-
-
-@dataclass
-class BackfillTaskRequest:
-    id: str
-    collection_name: str
-    document_ids: List[str]
+import argparse
 
 
-async def backfill_embeddings_chunk(document_ids: List[str]):
-    """Get documents from Firestore - asynchronously."""
-    datapoints = get_datapoints(document_ids)
-    assign_embeddings(datapoints)
-    await upload_embeddings(datapoints)
+async def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c","--collection_name", type=str, help="collection name")
+    args = parser.parse_args()
+    config = vars(args)
 
+    await create_table()
 
-async def backfill_embeddings_task(data):
-    """
-    This function is called by the Cloud Task.
-    Assume document_ids come in as a list of strings of length 100.
-    Assumes table etc has been set up.
-    """
+    collection_name = config["collection_name"]
+    document_ids = get_collection_ids(collection_name)
 
-    backfill_task = BackfillTaskRequest(**data)
+    print('document_ids', document_ids)
 
-    id = backfill_task.id
-    collection_name = backfill_task.collection_name
-    document_ids = backfill_task.document_ids
+    await backfill_embeddings_task({
+        "id": "task_id",
+        "collection_name": collection_name,
+        "document_ids": document_ids
+    })
 
-    # TODO
-    # task_ref = "task_reference"
-
-    print("DOC IDS",document_ids)
-
-    futures = [backfill_embeddings_chunk(document_ids[i:i+5]) for i in range(0, len(document_ids), 5)]
-
-    await asyncio.gather(*futures)
-
-    return "Done!"
-
-
-# async def main():
-#     await backfill_embeddings_task({
-#         "id": "task_id",
-#         "collection_name": "pgvector",
-#         "document_ids": ["6", "7", "8", "9", "10","11"]
-#     })
-
-# if __name__ == "__main__":
-#     asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
