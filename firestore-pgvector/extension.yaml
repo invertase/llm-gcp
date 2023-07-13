@@ -1,0 +1,157 @@
+name: firestore-pgvector
+version: 0.0.1
+specVersion: v1beta
+
+icon: icon.png
+
+tags:
+  [
+    ai,
+    search,
+    semantic-search,
+    vector-search,
+    text-search,
+    nlp,
+    llm,
+    large-language-models,
+    palm,
+    embeddings,
+    google-ai,
+  ]
+
+displayName: Firestore pgvector semantic search
+
+description: >-
+  Search for semantically similar text documents in Firestore with PaLM API and Cloud SQL using pgvector
+
+license: Apache-2.0 # https://spdx.org/licenses/
+
+sourceUrl: https://github.com
+releaseNotesUrl: https://github.com
+
+author:
+  authorName: Firebase
+  url: https://firebase.google.com
+
+contributors:
+  - authorName: Invertase
+    email: oss@invertase.io
+    url: https://github.com/invertase
+
+billingRequired: true
+
+apis:
+  - apiName: run.googleapis.com
+    reason: Powers v2 Cloud Functions
+
+
+roles:
+  - role: datastore.user
+    reason: >-
+      This extension requires read/write access to Firestore.
+
+  - role: aiplatform.user
+    reason: >-
+      This extension requires access to Vertex AI to create, update and query a
+      Vertex Matching Engine index.
+
+resources:
+  - name: backfilltrigger
+    type: firebaseextensions.v1beta.function
+    description: >-
+      Sets up table in cloud sql with pgvector extension and triggers backfill of firestore collection
+    properties:
+      availableMemoryMb: 512
+      location: ${LOCATION}
+      runtime: 'python311'
+      timeout: 540s
+      taskQueueTrigger: {}
+
+  - name: queryindex
+    type: firebaseextensions.v1beta.function
+    description: >-
+      A function that queries the Cloud SQL table for semantically similar text
+    properties:
+      availableMemoryMb: 512
+      location: ${LOCATION}
+      runtime: 'python311'
+      httpsTrigger: {}
+
+params:
+  - param: COLLECTION_NAME
+    label: Collection to index
+    description: >-
+      The Firestore collection to include in the search index.
+    type: string
+    required: true
+    immutable: true
+
+  - param: FIELDS
+    label: Fields in a Document to index
+    description: >-
+      Comma-separated list of field names to include in the search index. If you
+      leave this blank, all fields will be indexed.
+    type: string
+    required: false
+    immutable: true
+    validationRegex: ^[a-zA-Z0-9_]+(,[a-zA-Z0-9_]+)*$
+    validationErrorMessage: >-
+      Field names may only use upper and lowercase letters from A to Z,
+      underscores, or numbers, and may only be separated by commas. Trailing
+      commas and empty variable names are not allowed.
+
+  - param: CLOUD_SQL_INSTANCE_NAME
+    label: Collection to index
+    description: >-
+      The name of the cloud SQL instance to use for the index.
+    type: string
+    required: true
+    immutable: true
+
+  - param: CLOUD_SQL_LOCATION
+    label: Cloud SQL database location
+    description: >-
+      Where do you want to deploy the functions created for this extension? For
+      help selecting a location, refer to the [location selection
+      guide](https://firebase.google.com/docs/functions/locations).
+    type: select
+    options:
+      - label: Iowa (us-central1)
+        value: us-central1
+      - label: South Carolina (us-east1)
+        value: us-east1
+      - label: Northern Virginia (us-east4)
+        value: us-east4
+      - label: Oregon (us-west1)
+        value: us-west1
+      - label: Los Angeles (us-west2)
+        value: us-west2
+      - label: Montreal (northamerica-northeast1)
+        value: northamerica-northeast1
+      - label: Belgium (europe-west1)
+        value: europe-west1
+      - label: London (europe-west2)
+        value: europe-west2
+      - label: Frankfurt (europe-west3)
+        value: europe-west3
+      - label: Zurich (europe-west6)
+        value: europe-west6
+      - label: Taiwan (asia-east1)
+        value: asia-east1
+      - label: Tokyo (asia-northeast1)
+        value: asia-northeast1
+      - label: Seoul (asia-northeast3)
+        value: asia-northeast3
+      - label: Mumbai (asia-south1)
+        value: asia-south1
+      - label: Singapore (asia-southeast1)
+        value: asia-south1
+      - label: Sydney (australia-southeast1)
+        value: australia-southeast1
+    required: true
+    immutable: true
+
+lifecycleEvents:
+  onInstall:
+    function: backfilltrigger
+    processingMessage: Setting up Vertex Matching Engine

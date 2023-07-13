@@ -12,6 +12,7 @@ class Config:
     collection_name: str = getenv("COLLECTION_NAME") or "pgvector"
     project_id: str = getenv("PROJECT_ID") or getenv("PROJECT") or default_project
     location: str = getenv("LOCATION") or "us-central-1"
+    batch_size: int = int(getenv("BATCH_SIZE")) or 100
 
 
 config = Config()
