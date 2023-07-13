@@ -35,7 +35,7 @@ async def upload_embeddings(datapoints: List[Datapoint]):
         print("inserted datapoints", [d.id for d in datapoints])
 
 
-async def vector_search(plaintext_query: str):
+async def vector_search(plaintext_query: str, limit: int = 1):
     loop = asyncio.get_running_loop()
 
     async with Connector(loop=loop) as connector:
@@ -58,8 +58,8 @@ async def vector_search(plaintext_query: str):
 
         arr = np.array(embedded_query[0].values)
 
-        result = await conn.fetch('SELECT id FROM embeddings ORDER BY embedding <-> $1 LIMIT 1', arr)
+        result = await conn.fetch('SELECT id FROM embeddings ORDER BY embedding <-> $1 LIMIT $2', arr, str(limit))
 
         print('result',result)
 
-        return result[0]['id']
+        return result

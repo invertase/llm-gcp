@@ -1,13 +1,36 @@
 from typing import List
 from dataclasses import dataclass
 from utils.firestore import get_datapoints
-from utils.database import upload_embeddings
+from utils.database import upload_embeddings, vector_search
 from utils.llm import assign_embeddings
+from firebase_functions import https_fn
 import asyncio
 
 COLLECTION_NAME = "pgvector"
-
 DIMENSION = 768
+
+
+@dataclass
+class VectorSearchRequest:
+    query: str
+    limit: int = 1
+    
+
+@https_fn.on_request()
+async def http_vector_search(request):
+    """
+    This function is called by the HTTP trigger.
+    """
+    vector_search_request = VectorSearchRequest(**request.json)
+
+    query = vector_search_request.query
+    limit = vector_search_request.limit
+
+    results = await vector_search(query, limit)
+
+    return {"results": results}
+
+
 
 
 
@@ -52,12 +75,12 @@ async def backfill_embeddings_task(data):
     return "Done!"
 
 
-async def main():
-    await backfill_embeddings_task({
-        "id": "task_id",
-        "collection_name": "pgvector",
-        "document_ids": ["6", "7", "8", "9", "10","11"]
-    })
+# async def main():
+#     await backfill_embeddings_task({
+#         "id": "task_id",
+#         "collection_name": "pgvector",
+#         "document_ids": ["6", "7", "8", "9", "10","11"]
+#     })
 
-if __name__ == "__main__":
-    asyncio.run(main())
+# if __name__ == "__main__":
+#     asyncio.run(main())
