@@ -14,10 +14,6 @@ from google.cloud.firestore import Client
 
 from app.history import FirestoreChatMessageHistory
 
-firebase_admin.initialize_app()
-
-client = firestore.client()
-
 
 class ChatSession:
     llm: LLM
@@ -40,16 +36,15 @@ class ChatSession:
             session_id=self.uid,
         )
 
-        memory = ConversationBufferMemory(
-            memory_key="history", chat_memory=self.history, return_messages=True
+        self.conversation = ConversationChain(
+            llm=self.llm,
+            memory=ConversationBufferMemory(
+                memory_key="history", chat_memory=self.history, return_messages=True
+            ),
         )
-
-        conversation = ConversationChain(llm=self.llm, memory=memory)
-
-        self.conversation = conversation
 
     def add_message(self, message: str):
         return self.conversation.run(input=message)
 
     def clear_session(self):
-        self.history.clear()
+        return self.history.clear()

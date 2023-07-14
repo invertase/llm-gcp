@@ -1,5 +1,6 @@
 import logging
 
+import firebase_admin
 
 from fastapi import Depends, FastAPI, HTTPException, status
 
@@ -9,6 +10,7 @@ from app.models.chat_message import ChatMessage
 
 logger = logging.getLogger(__name__)
 
+firebase_admin.initialize_app()
 
 app = FastAPI()
 
@@ -37,12 +39,12 @@ def chat(
 
 
 @app.delete("/clear_session")
-def invalidate_chat(
+def clear_session(
     user=Depends(verify_user),
 ):
     try:
         chat_session = ChatSession(uid=user["uid"])
-        chat_session.clear_session(uid=user["uid"])
+        chat_session.clear_session()
 
         return {"message": "Session cleared"}
     except Exception as e:

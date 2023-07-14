@@ -16,14 +16,9 @@ The sample also demonstrates how to persist the user's session in Firestore, and
 - Python >= 3.9
 - [gcloud CLI](https://cloud.google.com/sdk/docs/install)
 
-You will also need to create a Google Cloud project with billing enabled, and enable the following APIs:
+You will also need to create a Google Cloud project with billing enabled.
 
-```bash
-gcloud services enable run.googleapis.com
-gcloud services enable cloudbuild.googleapis.com
-gcloud services enable containerregistry.googleapis.com
-gcloud services enable aiplatform.googleapis.com
-```
+Finally, create a Firebase Firestore database by following the [instructions](https://firebase.google.com/docs/firestore/quickstart#create).
 
 ## Local debugging
 
@@ -36,7 +31,7 @@ Run the following commands in the root of the project:
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ### Using uvicorn
@@ -106,6 +101,8 @@ curl https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?k
 ```
 
 Where `API_KEY` is the API key of your Firebase project, and `EMAIL` and `PASSWORD` are the credentials of the user you want to authenticate.
+
+Ensure that the user you are authenticating has been created in Firebase Authentication.
 
 The response will be a JSON with the following structure:
 
