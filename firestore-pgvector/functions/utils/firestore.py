@@ -8,9 +8,10 @@ from utils.database import upload_embeddings
 
 COLLECTION_NAME = "pgvector"
 
-initialize_app()
+# initialize_app()
 
 db = firestore.client()
+
 
 def get_collection_ids(collection_name: str) -> List[str]:
     """Get all document ids from a collection."""
@@ -27,14 +28,19 @@ def get_doc(document_id: str) -> dict:
 
     return db.collection(COLLECTION_NAME).document(document_id).get().to_dict()
 
+
 def extract_embedding_input(doc_dict) -> str:
     """Extract embedding input from document fields."""
     # TODO: add support for multiple fields/configurable fields
     return doc_dict["title"]
 
+
 def get_datapoints(document_ids: List[str]) -> List[Datapoint]:
     """Get documents from Firestore - asynchronously."""
-    return [Datapoint(id=doc_id, content=extract_embedding_input(get_doc(doc_id))) for doc_id in document_ids]
+    return [
+        Datapoint(id=doc_id, content=extract_embedding_input(get_doc(doc_id)))
+        for doc_id in document_ids
+    ]
 
 
 async def backfill_embeddings_chunk(document_ids: List[str]):
@@ -50,6 +56,7 @@ class BackfillTaskRequest:
     collection_name: str
     document_ids: List[str]
 
+
 async def backfill_embeddings_task_handler(data):
     """
     This function is called by the Cloud Task.
@@ -60,10 +67,13 @@ async def backfill_embeddings_task_handler(data):
     backfill_task = BackfillTaskRequest(**data)
 
     id = backfill_task.id
-    collection_name = backfill_task.collection_name
+    # collection_name = backfill_task.collection_name
     document_ids = backfill_task.document_ids
 
-    futures = [backfill_embeddings_chunk(document_ids[i:i+5]) for i in range(0, len(document_ids), 5)]
+    futures = [
+        backfill_embeddings_chunk(document_ids[i : i + 5])
+        for i in range(0, len(document_ids), 5)
+    ]
 
     await asyncio.gather(*futures)
 

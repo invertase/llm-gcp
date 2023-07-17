@@ -9,7 +9,6 @@ from typing import List
 
 
 async def create_table():
-
     loop = asyncio.get_running_loop()
 
     async with Connector(loop=loop) as connector:
@@ -19,13 +18,16 @@ async def create_table():
             "asyncpg",
             user="postgres",
             password="invertase",
-            db = f"postgres"
+            db=f"postgres",
         )
 
-        await conn.execute("CREATE TABLE IF NOT EXISTS embeddings (id VARCHAR(1024) PRIMARY KEY, content VARCHAR(1024), embedding vector(768));")
+        await conn.execute(
+            "CREATE TABLE IF NOT EXISTS embeddings (id VARCHAR(1024) PRIMARY KEY, content VARCHAR(1024), embedding vector(768));"
+        )
         await conn.execute("CREATE EXTENSION IF NOT EXISTS vector;")
 
-        print('created table if not exists!')
+        print("created table if not exists!")
+
 
 async def upload_embeddings(datapoints: List[Datapoint]):
     loop = asyncio.get_running_loop()
@@ -37,11 +39,10 @@ async def upload_embeddings(datapoints: List[Datapoint]):
             "asyncpg",
             user="postgres",
             password="invertase",
-            db = f"postgres"
+            db=f"postgres",
         )
 
         # conn.execute("CREATE TABLE IF NOT EXISTS embeddings (id VARCHAR(1024) PRIMARY KEY, content VARCHAR(1024), embedding vector(768));")
-
 
         #  TODO: can we move this whole connection logic out so that it's not called every time?
         await register_vector(conn)
@@ -50,7 +51,12 @@ async def upload_embeddings(datapoints: List[Datapoint]):
 
         for datapoint in datapoints:
             # TODO: handle clashing ids
-            await conn.execute("INSERT INTO embeddings (id, content, embedding) VALUES ($1, $2, $3);", datapoint.id, datapoint.content, datapoint.embedding)
+            await conn.execute(
+                "INSERT INTO embeddings (id, content, embedding) VALUES ($1, $2, $3);",
+                datapoint.id,
+                datapoint.content,
+                datapoint.embedding,
+            )
             # print(f"inserted {datapoint.id}")
         print("inserted datapoints", [d.id for d in datapoints])
 
@@ -65,7 +71,7 @@ async def vector_search(plaintext_query: str, limit: int = 1):
             "asyncpg",
             user="postgres",
             password="invertase",
-            db = f"postgres"
+            db=f"postgres",
         )
 
         # conn.execute("CREATE TABLE IF NOT EXISTS embeddings (id VARCHAR(1024) PRIMARY KEY, values REAL[]);")
@@ -78,8 +84,12 @@ async def vector_search(plaintext_query: str, limit: int = 1):
 
         arr = np.array(embedded_query[0].values)
 
-        result = await conn.fetch('SELECT id,content FROM embeddings ORDER BY embedding <-> $1 LIMIT $2', arr, limit)
+        result = await conn.fetch(
+            "SELECT id,content FROM embeddings ORDER BY embedding <-> $1 LIMIT $2",
+            arr,
+            limit,
+        )
 
-        print('result',result)
+        print("result", result)
 
         return [dict(row) for row in result]

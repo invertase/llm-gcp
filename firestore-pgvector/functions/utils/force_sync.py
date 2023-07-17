@@ -1,9 +1,10 @@
 import functools
 
+
 def force_sync(fn):
-    '''
+    """
     turn an async function to sync function
-    '''
+    """
     import asyncio
 
     @functools.wraps(fn)
