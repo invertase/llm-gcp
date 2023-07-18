@@ -27,5 +27,7 @@
     },
     "singleProjectMode": true
   },
-  "extensions": {}
+  "extensions": {
+    "firestore-pgvector": "."
+  }
 }

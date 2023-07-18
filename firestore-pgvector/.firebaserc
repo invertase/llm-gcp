@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "invertase--palm-demo"
+  },
+  "targets": {},
+  "etags": {
+    "invertase--palm-demo": {
+      "extensionInstances": {
+        "firestore-pgvector": "9f3afc021451c1b750871185b3b5dec0a449f140c3683d1869a23be730d7192f",
+        "3-ali-chat": "317c21b913031cfa53de82ae81f6efa529c639e664b344ec738bc83e688a0c52",
+        "7-ali-chat": "000a15f81ff5bbe0ef27353cef977d8c271cd18fa1830988c7c582e28cca21a9"
+      }
+    }
   }
 }

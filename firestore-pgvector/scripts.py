@@ -33,4 +33,7 @@ def prepare_for_deployment():
     with open('./functions/requirements.txt', 'w') as f:
         for key, value in dependencies.items():
             if key != 'python':
+                # remove ^ from start of value if it exists
+                if value[0] == '^':
+                    value = value[1:]
                 f.write(f'{key}=={value}\n')
