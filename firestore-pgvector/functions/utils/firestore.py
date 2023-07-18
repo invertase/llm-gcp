@@ -52,8 +52,8 @@ async def backfill_embeddings_chunk(document_ids: List[str]):
 
 @dataclass
 class BackfillTaskRequest:
-    id: str
-    collection_name: str
+    chunk_document_id: str
+    # collection_name: str
     document_ids: List[str]
 
 
@@ -66,7 +66,6 @@ async def backfill_embeddings_task_handler(data):
 
     backfill_task = BackfillTaskRequest(**data)
 
-    id = backfill_task.id
     # collection_name = backfill_task.collection_name
     document_ids = backfill_task.document_ids
 

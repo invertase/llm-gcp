@@ -146,10 +146,12 @@ def backfilltrigger(req: https_fn.Request):
 def backfillembeddingtask(req):
     print("called backfill_embeddings_task")
     
-    data = req.get("data")
+    data = json.loads(req.data.decode("utf-8")).get("data")
+
+    print(data)
 
 
-    chunk_document_id = data["chunk_document_id"]
+    chunk_document_id = data.get("chunk_document_id")
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
