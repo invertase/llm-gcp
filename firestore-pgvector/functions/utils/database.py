@@ -20,11 +20,11 @@ async def create_table():
             password="invertase",
             db=f"postgres",
         )
+        await conn.execute("CREATE EXTENSION IF NOT EXISTS vector;")
 
         await conn.execute(
             "CREATE TABLE IF NOT EXISTS embeddings (id VARCHAR(1024) PRIMARY KEY, content VARCHAR(1024), embedding vector(768));"
         )
-        await conn.execute("CREATE EXTENSION IF NOT EXISTS vector;")
 
         print("created table if not exists!")
 
@@ -51,12 +51,15 @@ async def upload_embeddings(datapoints: List[Datapoint]):
 
         for datapoint in datapoints:
             # TODO: handle clashing ids
-            await conn.execute(
-                "INSERT INTO embeddings (id, content, embedding) VALUES ($1, $2, $3);",
-                datapoint.id,
-                datapoint.content,
-                datapoint.embedding,
-            )
+            try:
+                await conn.execute(
+                    "INSERT INTO embeddings (id, content, embedding) VALUES ($1, $2, $3);",
+                    datapoint.id,
+                    datapoint.content,
+                    datapoint.embedding,
+                )
+            except Exception as e:
+                print("error inserting datapoint", datapoint.id, "probably clashing id")
             # print(f"inserted {datapoint.id}")
         print("inserted datapoints", [d.id for d in datapoints])
 
