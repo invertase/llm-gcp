@@ -103,6 +103,25 @@ params:
     type: string
     required: true
     immutable: true
+    default: pgvector
+
+  - param: TASK_COLLECTION_NAME
+    label: Task Collection Name
+    description: >-
+      The Firestore collection to keep track of the overall task of uploading embeddings
+    type: string
+    required: true
+    immutable: true
+    default: pgvector_task
+
+  - param: EMBEDDINGS_COLLECTION_NAME
+    label: Embeddings Collection Name
+    description: >-
+      The Firestore collection to keep track of the chunks of embeddings processed by tasks
+    type: string
+    required: true
+    immutable: true
+    default: pgvector_embeddings
 
   - param: FIELDS
     label: Fields in a Document to index
@@ -119,12 +138,29 @@ params:
       commas and empty variable names are not allowed.
 
   - param: CLOUD_SQL_INSTANCE_NAME
-    label: Collection to index
+    label: Cloud SQL Instance Name
     description: >-
       The name of the cloud SQL instance to use for the index.
     type: string
     required: true
     immutable: true
+
+  - param: CLOUD_SQL_PASSWORD
+    label: Cloud SQL Instance Password
+    description: >-
+      The password of the cloud SQL instance to use.
+    type: secret
+    required: true
+    immutable: true
+
+  - param: CLOUD_SQL_DB
+    label: Cloud SQL DB Name
+    description: >-
+      The name of the cloud SQL database
+    type: string
+    required: true
+    immutable: true
+    default: postgres
   
   - param: LOCATION
     label: Location
@@ -166,14 +202,6 @@ params:
         value: asia-south1
       - label: Sydney (australia-southeast1)
         value: australia-southeast1
-    required: true
-    immutable: true
-
-  - param: CLOUD_SQL_INSTANCE_NAME
-    label: Collection to index
-    description: >-
-      The name of the cloud SQL instance to use for the index.
-    type: string
     required: true
     immutable: true
   

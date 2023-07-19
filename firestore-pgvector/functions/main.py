@@ -95,8 +95,8 @@ def backfilltrigger(req: https_fn.Request):
 
         queue_path = tasks_client.queue_path(
             config.project_id,
-            "us-central1",
-            "ext-firestore-pgvector-backfillembeddingtask",
+            config.location,
+            f"ext-{config.ext_instance_id}-backfillembeddingtask",
         )
 
         task = tasks_v2.Task(
@@ -129,15 +129,15 @@ def backfillembeddingtask(req):
     print("backfill_embeddings_task_handler finished", data)
 
     task_doc = (
-        db.collection("task_collection").document("task_document").get().to_dict()
+        db.collection(config.task_collection_name).document("task_document").get().to_dict()
     )
     processed_length = task_doc["processed_length"] + len(data["document_ids"])
     status = "PENDING" if processed_length < task_doc["total_length"] else "COMPLETE"
 
-    db.collection("embeddings").document(chunk_document_id).update(
+    db.collection(config.embeddings_collection_name).document(chunk_document_id).update(
         {"status": "COMPLETE"}
     )
-    db.collection("task_collection").document("task_document").update(
+    db.collection(config.task_collection_name).document("task_document").update(
         {"processed_length": processed_length, "status": status}
     )
     return "OK"
