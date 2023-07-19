@@ -67,7 +67,9 @@ resources:
       location: ${LOCATION}
       runtime: 'python311'
       timeout: 540s
-      httpsTrigger: {}
+      taskQueueTrigger:
+        retryConfig:
+          maxAttempts: 50
 
   - name: queryindex
     type: firebaseextensions.v1beta.function
@@ -247,3 +249,8 @@ params:
         value: australia-southeast1
     required: true
     immutable: true
+
+lifecycleEvents:
+  onInstall:
+    function: backfilltrigger
+    processingMessage: backfill documents into pgvector cloud sql

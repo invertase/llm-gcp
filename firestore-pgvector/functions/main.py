@@ -48,7 +48,7 @@ def queryindex(request):
 tasks_client = tasks_v2.CloudTasksClient()
 
 
-def backfilltrigger(req: https_fn.Request):
+def backfilltrigger(data):
     # create table in our Cloud SQL database instance, and set up postgresql vector extension.
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -102,7 +102,7 @@ def backfilltrigger(req: https_fn.Request):
         task = tasks_v2.Task(
             http_request={
                 "http_method": tasks_v2.HttpMethod.POST,
-                "url": req.get_json().get("url"),
+                "url": f"https://{config.location}-{config.project_id}.cloudfunctions.net/ext-{config.ext_instance_id}-backfillembeddingtask",
                 "headers": {"Content-type": "application/json"},
                 "body": json.dumps(body).encode(),
             }
