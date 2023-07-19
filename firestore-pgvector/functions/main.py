@@ -48,36 +48,6 @@ def queryindex(request):
 tasks_client = tasks_v2.CloudTasksClient()
 
 
-# def create_queue():
-#     queue_path = tasks_client.queue_path(
-#         config.project_id,
-#         "us-central1",
-#         "backfillembeddingsqueue1",
-#     )
-
-#     print("queue_path", queue_path)
-
-#     try:
-#         tasks_client.get_queue(name=queue_path)
-#         print("Queue already exists")
-#         return queue_path
-#     except:
-#         tasks_client.create_queue(
-#             parent=f"projects/{config.project_id}/locations/us-central1",
-#             queue={
-#                 "name": queue_path,
-#                 "rate_limits": {
-#                     "max_dispatches_per_second": 10,
-#                 },
-#             },
-#         )
-#         from time import sleep
-
-#         sleep(3)
-
-#         return queue_path
-
-
 def backfilltrigger(req: https_fn.Request):
     # create table in our Cloud SQL database instance, and set up postgresql vector extension.
     loop = asyncio.new_event_loop()
@@ -133,9 +103,7 @@ def backfilltrigger(req: https_fn.Request):
             http_request={
                 "http_method": tasks_v2.HttpMethod.POST,
                 "url": req.get_json().get("url"),
-                "headers": {
-                    "Content-type": "application/json"
-                },
+                "headers": {"Content-type": "application/json"},
                 "body": json.dumps(body).encode(),
             }
         )
@@ -143,13 +111,13 @@ def backfilltrigger(req: https_fn.Request):
         tasks_client.create_task(parent=queue_path, task=task)
     return "OK"
 
+
 def backfillembeddingtask(req):
     print("called backfill_embeddings_task")
-    
+
     data = json.loads(req.data.decode("utf-8")).get("data")
 
     print(data)
-
 
     chunk_document_id = data.get("chunk_document_id")
 
