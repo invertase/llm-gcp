@@ -5,8 +5,7 @@ from utils.datapoint import Datapoint
 from dataclasses import dataclass
 from utils.llm import assign_embeddings
 from utils.database import upload_embeddings
-
-COLLECTION_NAME = "pgvector"
+from config import config
 
 # initialize_app()
 
@@ -26,7 +25,7 @@ def get_doc(document_id: str) -> dict:
 
     print(f"Getting document {document_id} from Firestore")
 
-    return db.collection(COLLECTION_NAME).document(document_id).get().to_dict()
+    return db.collection(config.collection_name).document(document_id).get().to_dict()
 
 
 def extract_embedding_input(doc_dict) -> str:
