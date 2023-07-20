@@ -6,9 +6,7 @@
   "etags": {
     "invertase--palm-demo": {
       "extensionInstances": {
-        "3-ali-chat": "317c21b913031cfa53de82ae81f6efa529c639e664b344ec738bc83e688a0c52",
-        "7-ali-chat": "000a15f81ff5bbe0ef27353cef977d8c271cd18fa1830988c7c582e28cca21a9",
-        "firestore-pgvector-3": "7d92d067adf224263bf77e0b6a09f2ba28c48319f8818294e1819e598268b64d"
+        "firestore-pgvector-11": "0d4f89c6c4c2ae330aae798179adcf2599585a5e173ed735b7f6c11895b1192a"
       }
     }
   }

@@ -70,7 +70,7 @@ async def create_table():
 async def upload_embeddings(datapoints: List[Datapoint]):
     sql_steps = [
         [
-            "INSERT INTO embeddings (id, content, embedding) VALUES ($1, $2, $3);",
+            "INSERT INTO embeddings (id, content, embedding) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING;",
             datapoint.id,
             datapoint.content,
             datapoint.embedding,

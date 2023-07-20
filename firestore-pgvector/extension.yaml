@@ -116,15 +116,6 @@ params:
     immutable: true
     default: pgvector_task
 
-  - param: EMBEDDINGS_COLLECTION_NAME
-    label: Embeddings Collection Name
-    description: >-
-      The Firestore collection to keep track of the chunks of embeddings processed by tasks
-    type: string
-    required: true
-    immutable: true
-    default: pgvector_embeddings
-
   - param: FIELDS
     label: Fields in a Document to index
     description: >-
@@ -151,7 +142,7 @@ params:
     label: Cloud SQL Instance Password
     description: >-
       The password of the cloud SQL instance to use.
-    type: secret
+    type: string
     required: true
     immutable: true
 

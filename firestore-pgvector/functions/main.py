@@ -49,15 +49,18 @@ tasks_client = tasks_v2.CloudTasksClient()
 
 
 def backfilltrigger(data):
+
+    # log the config
+    print('called with config',config)
+
+
     # create table in our Cloud SQL database instance, and set up postgresql vector extension.
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     force_sync(create_table)()
 
-    document_ids = [doc.id for doc in db.collection("pgvector").list_documents()]
-
-    print("refs data", document_ids)
+    document_ids = [doc.id for doc in db.collection(config.collection_name).list_documents()]
 
     if len(document_ids) == 0:
         print("No documents in collection")
@@ -67,7 +70,7 @@ def backfilltrigger(data):
     # queue_path = create_queue()
 
     counter = 1
-    db.collection("task_collection").document("task_document").set(
+    db.collection(config.task_collection_name).document("task_document").set(
         {"total_length": len(document_ids), "processed_length": 0, "status": "PENDING"}
     )
 
@@ -82,7 +85,7 @@ def backfilltrigger(data):
         counter += 1
         document_ids = chunk
         # write chunk to document in task_collection
-        db.collection("embeddings").document(chunk_document_id).set(
+        db.collection(config.task_collection_name).document(chunk_document_id).set(
             {"document_ids": document_ids, "status": "PENDING"}
         )
         # queue a task to process the chunk
@@ -96,13 +99,13 @@ def backfilltrigger(data):
         queue_path = tasks_client.queue_path(
             config.project_id,
             config.location,
-            f"ext-{config.ext_instance_id}-backfillembeddingtask",
+            f"ext-{config.ext_instance_id_string}-backfillembeddingtask",
         )
 
         task = tasks_v2.Task(
             http_request={
                 "http_method": tasks_v2.HttpMethod.POST,
-                "url": f"https://{config.location}-{config.project_id}.cloudfunctions.net/ext-{config.ext_instance_id}-backfillembeddingtask",
+                "url": f"https://{config.location}-{config.project_id}.cloudfunctions.net/ext-{config.ext_instance_id_string}-backfillembeddingtask",
                 "headers": {"Content-type": "application/json"},
                 "body": json.dumps(body).encode(),
             }
@@ -129,15 +132,15 @@ def backfillembeddingtask(req):
     print("backfill_embeddings_task_handler finished", data)
 
     task_doc = (
-        db.collection(config.task_collection_name).document("task_document").get().to_dict()
+        db.collection(config.task_collection_name).document("_task").get().to_dict()
     )
     processed_length = task_doc["processed_length"] + len(data["document_ids"])
     status = "PENDING" if processed_length < task_doc["total_length"] else "COMPLETE"
 
-    db.collection(config.embeddings_collection_name).document(chunk_document_id).update(
+    db.collection(config.task_collection_name).document(chunk_document_id).update(
         {"status": "COMPLETE"}
     )
-    db.collection(config.task_collection_name).document("task_document").update(
+    db.collection(config.task_collection_name).document("_task").update(
         {"processed_length": processed_length, "status": status}
     )
     return "OK"
