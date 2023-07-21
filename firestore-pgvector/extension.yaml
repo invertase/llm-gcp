@@ -95,7 +95,10 @@ resources:
       timeout: 540s
       taskQueueTrigger:
         retryConfig:
-          maxAttempts: 50
+          maxAttempts: 100  # Warning: setting this too low can prevent the function from running
+          minBackoffSeconds: 0.1
+          maxBackoffSeconds: 3600
+          maxDoublings: 16
 
 params:
   - param: COLLECTION_NAME

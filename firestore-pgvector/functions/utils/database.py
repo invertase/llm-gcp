@@ -66,6 +66,15 @@ async def create_table():
     )
     return res
 
+async def drop_table():
+    res = await run_with_connector(
+        [
+            "DROP TABLE IF EXISTS embeddings;",
+            "DROP EXTENSION IF EXISTS vector;"
+        ]
+    )
+    return res
+
 
 async def upload_embeddings(datapoints: List[Datapoint]):
     sql_steps = [

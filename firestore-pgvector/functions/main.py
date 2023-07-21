@@ -70,7 +70,7 @@ def backfilltrigger(data):
     # queue_path = create_queue()
 
     counter = 1
-    db.collection(config.task_collection_name).document("task_document").set(
+    db.collection(config.task_collection_name).document("_task").set(
         {"total_length": len(document_ids), "processed_length": 0, "status": "PENDING"}
     )
 

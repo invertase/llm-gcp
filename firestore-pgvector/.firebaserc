@@ -6,7 +6,7 @@
   "etags": {
     "invertase--palm-demo": {
       "extensionInstances": {
-        "firestore-pgvector-11": "0d4f89c6c4c2ae330aae798179adcf2599585a5e173ed735b7f6c11895b1192a"
+        "firestore-pgvector-16": "f82b574aedc376be52dc662597739a3c82aebc446e44c8bbc115c930c11219a8"
       }
     }
   }
