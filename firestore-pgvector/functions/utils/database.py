@@ -13,6 +13,8 @@ connection_name = (
     f"{config.project_id}:{config.location}:{config.cloud_sql_instance_name}"
 )
 
+table_name = config.cloud_sql_table_name
+
 
 def catch_exception(func):
     def inner(*args, **kwargs):
@@ -61,7 +63,7 @@ async def create_table():
     res = await run_with_connector(
         [
             "CREATE EXTENSION IF NOT EXISTS vector;",
-            "CREATE TABLE IF NOT EXISTS embeddings (id VARCHAR(1024) PRIMARY KEY, content VARCHAR(1024), embedding vector(768));",
+            f"CREATE TABLE IF NOT EXISTS {table_name} (id VARCHAR(1024) PRIMARY KEY, content VARCHAR(1024), embedding vector(768));",
         ]
     )
     return res
@@ -69,7 +71,7 @@ async def create_table():
 async def drop_table():
     res = await run_with_connector(
         [
-            "DROP TABLE IF EXISTS embeddings;",
+            f"DROP TABLE IF EXISTS {table_name};",
             "DROP EXTENSION IF EXISTS vector;"
         ]
     )
@@ -79,7 +81,7 @@ async def drop_table():
 async def upload_embeddings(datapoints: List[Datapoint]):
     sql_steps = [
         [
-            "INSERT INTO embeddings (id, content, embedding) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING;",
+            f"INSERT INTO {table_name} (id, content, embedding) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING;",
             datapoint.id,
             datapoint.content,
             datapoint.embedding,
@@ -98,7 +100,7 @@ async def vector_search(plaintext_query: str, limit: int = 1):
     result = await run_with_connector(
         [
             [
-                "SELECT id,content FROM embeddings ORDER BY embedding <-> $1 LIMIT $2",
+                f"SELECT id,content FROM {table_name} ORDER BY embedding <-> $1 LIMIT $2",
                 embedding_values,
                 limit,
             ]

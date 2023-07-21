@@ -126,6 +126,7 @@ params:
       leave this blank, all fields will be indexed.
     type: string
     required: false
+    default: title
     immutable: true
     validationRegex: ^[a-zA-Z0-9_]+(,[a-zA-Z0-9_]+)*$
     validationErrorMessage: >-
@@ -145,7 +146,7 @@ params:
     label: Cloud SQL Instance Password
     description: >-
       The password of the cloud SQL instance to use.
-    type: string
+    type: secret
     required: true
     immutable: true
 
@@ -155,8 +156,15 @@ params:
       The name of the cloud SQL database
     type: string
     required: true
-    immutable: true
     default: postgres
+
+  - param: CLOUD_SQL_TABLE_NAME
+    label: Cloud SQL Table Name
+    description: >-
+      The name of the table to create in the cloud SQL database to store embeddings
+    type: string
+    required: true
+    default: embeddings
   
   - param: LOCATION
     label: Location

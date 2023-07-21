@@ -19,6 +19,8 @@ class Config:
     # get first element of tuple:
     ext_instance_id_string = getenv("EXT_INSTANCE_ID")[0] if isinstance(getenv("EXT_INSTANCE_ID"), tuple) else getenv("EXT_INSTANCE_ID")
     task_collection_name = getenv("TASK_COLLECTION_NAME")
+    fields = getenv("FIELDS").split(",")
+    cloud_sql_table_name = getenv("CLOUD_SQL_TABLE_NAME")
 
 
 config = Config()

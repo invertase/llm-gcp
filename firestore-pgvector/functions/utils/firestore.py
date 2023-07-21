@@ -28,10 +28,14 @@ def get_doc(document_id: str) -> dict:
     return db.collection(config.collection_name).document(document_id).get().to_dict()
 
 
+def concatentate_fields(doc_dict) -> str:
+    """Concatenate fields from document."""
+    fields = config.fields
+    return " ".join([doc_dict[field] for field in fields])
+
 def extract_embedding_input(doc_dict) -> str:
     """Extract embedding input from document fields."""
-    # TODO: add support for multiple fields/configurable fields
-    return doc_dict["title"]
+    return concatentate_fields(doc_dict)
 
 
 def get_datapoints(document_ids: List[str]) -> List[Datapoint]:
