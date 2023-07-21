@@ -1,0 +1,126 @@
+name: task-repro
+version: 0.0.1
+specVersion: v1beta
+
+tags:
+  [
+    ai,
+    search,
+    semantic-search,
+    vector-search,
+    text-search,
+    nlp,
+    llm,
+    large-language-models,
+    palm,
+    embeddings,
+    google-ai,
+  ]
+
+displayName: Tasks Repro
+
+description: >-
+  hopefully demonstrates the issue
+
+license: Apache-2.0 # https://spdx.org/licenses/
+
+sourceUrl: https://github.com
+releaseNotesUrl: https://github.com
+
+author:
+  authorName: Firebase
+  url: https://firebase.google.com
+
+contributors:
+  - authorName: Invertase
+    email: oss@invertase.io
+    url: https://github.com/invertase
+
+billingRequired: true
+
+apis:
+  - apiName: run.googleapis.com
+    reason: Powers v2 Cloud Functions
+
+resources:
+
+  - name: backfilltrigger
+    type: firebaseextensions.v1beta.function
+    description: >-
+      Sets up table in cloud sql with pgvector extension and triggers backfill of firestore collection
+    properties:
+      availableMemoryMb: 1024
+      location: ${LOCATION}
+      runtime: 'python311'
+      timeout: 540s
+      taskQueueTrigger:
+        retryConfig:
+          maxAttempts: 50
+
+  - name: backfillembeddingtask
+    type: firebaseextensions.v1beta.function
+    description: >-
+      A task-triggered function that gets called before a Vertex Matching Engine
+      index is created. It backfills embeddings for all documents in the
+      collection.
+    properties:
+      availableMemoryMb: 1024
+      location: ${LOCATION}
+      runtime: 'python311'
+      timeout: 540s
+      taskQueueTrigger:
+        retryConfig:
+          maxAttempts: 100  # Warning: setting this too low can prevent the function from running
+          minBackoffSeconds: 0.1
+          maxBackoffSeconds: 3600
+          maxDoublings: 16
+
+params:
+
+  - param: LOCATION
+    label: Location
+    description: >-
+      Where do you want to deploy the functions created for this extension? For
+      help selecting a location, refer to the [location selection
+      guide](https://firebase.google.com/docs/functions/locations).
+    type: select
+    options:
+      - label: Iowa (us-central1)
+        value: us-central1
+      - label: South Carolina (us-east1)
+        value: us-east1
+      - label: Northern Virginia (us-east4)
+        value: us-east4
+      - label: Oregon (us-west1)
+        value: us-west1
+      - label: Los Angeles (us-west2)
+        value: us-west2
+      - label: Montreal (northamerica-northeast1)
+        value: northamerica-northeast1
+      - label: Belgium (europe-west1)
+        value: europe-west1
+      - label: London (europe-west2)
+        value: europe-west2
+      - label: Frankfurt (europe-west3)
+        value: europe-west3
+      - label: Zurich (europe-west6)
+        value: europe-west6
+      - label: Taiwan (asia-east1)
+        value: asia-east1
+      - label: Tokyo (asia-northeast1)
+        value: asia-northeast1
+      - label: Seoul (asia-northeast3)
+        value: asia-northeast3
+      - label: Mumbai (asia-south1)
+        value: asia-south1
+      - label: Singapore (asia-southeast1)
+        value: asia-south1
+      - label: Sydney (australia-southeast1)
+        value: australia-southeast1
+    required: true
+    immutable: true
+
+lifecycleEvents:
+  onInstall:
+    function: backfilltrigger
+    processingMessage: backfill documents into pgvector cloud sql

@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "invertase--palm-demo"
+  },
+  "targets": {},
+  "etags": {
+    "invertase--palm-demo": {
+      "extensionInstances": {
+        "task-repro": "e7c2ce5c091ab258f04cdec244092fc65368bdfdb5af232fe13a46e5d6651b40",
+        "firestore-pgvector-16": "f82b574aedc376be52dc662597739a3c82aebc446e44c8bbc115c930c11219a8"
+      }
+    }
+  }
+}
